@@ -1,0 +1,16 @@
+name: Ordinal Release Notes
+on:
+  release:
+    types: [published]
+
+jobs:
+  discord-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Release Notes to Discord
+        uses: tsickert/discord-webhook@v6.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "New Release: ${{ github.event.release.name || github.event.release.tag_name }}"
+          embed-description: ${{ github.event.release.body }}
+          embed-color: "5814783"
