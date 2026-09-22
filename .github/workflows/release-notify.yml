@@ -1,4 +1,4 @@
-name: Ordinal Release Notes
+name: Notify Discord on Release
 on:
   release:
     types: [published]
@@ -7,10 +7,13 @@ jobs:
   discord-notification:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Release Notes to Discord
-        uses: tsickert/discord-webhook@v6.0.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "New Release: ${{ github.event.release.name || github.event.release.tag_name }}"
-          embed-description: ${{ github.event.release.body }}
-          embed-color: "5814783"
+      - name: Send Release Notes
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+        run: |
+          # Use jq to format the release body cleanly into JSON text
+          PAYLOAD=$(jq -n --arg content "$RELEASE_BODY" '{content: $content}')
+          
+          # Send the raw description to Discord
+          curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"
